@@ -17,16 +17,23 @@ class HelperCog(commands.Cog):
     @commands.command()
     async def connected_and_verified(self, ctx, bot):
         user = ctx.message.author
-        voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+
+        # check if the user is in a voice channel
+        if user.voice is None or user.voice.channel is None:
+            await ctx.send("You're not in a voice channel!")
+            return False
+
         # case where bot isn't connected to voice channel
-        if not await self.is_connected(ctx, bot):
+        elif not await self.is_connected(ctx, bot):
             await ctx.author.voice.channel.connect()
             await ctx.send(f"Joined **{user.voice.channel}**")
             return True
+
         # case where bot is in a different voice channel
         elif await self.is_connected(ctx, bot) and user.voice.channel != ctx.guild.voice_client.channel:
             await ctx.send(f"I'm in {ctx.guild.voice_client.channel} right now.")
             return False
+
         # case where bot is already in the same voice channel as user
         else:
             return True
@@ -34,3 +41,4 @@ class HelperCog(commands.Cog):
     @commands.command()
     async def song_playing(self, player):
         return player is not None and player.now_playing() is not None
+
